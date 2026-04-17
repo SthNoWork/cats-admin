@@ -52,6 +52,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="firebase.js"></script>
     <script src="cloudinary.js"></script>
     <script src="database-initializer.js"></script>
@@ -150,11 +151,13 @@
                 });
         }
 
+        // Collects all selected category IDs from the multi-select dropdown
         function getSelectedCategories() {
             var select = document.getElementById("categories");
             var selected = [];
             var i;
 
+            // Loop through all options and collect those that are selected
             for (i = 0; i < select.options.length; i = i + 1) {
                 if (select.options[i].selected) {
                     selected.push(select.options[i].value);
@@ -162,13 +165,6 @@
             }
 
             return selected;
-        }
-
-        function formatUploadDate(date) {
-            var year = date.getFullYear();
-            var month = String(date.getMonth() + 1).padStart(2, "0");
-            var day = String(date.getDate()).padStart(2, "0");
-            return year + "/" + month + "/" + day;
         }
 
         function setStatus(message) {
@@ -249,7 +245,6 @@
             }
 
             var now = new Date();
-            var uploadDate = formatUploadDate(now);
 
             uploadFilesToCloudinary(files, function (error, cloudinaryUrls) {
                 if (error) {
@@ -274,7 +269,6 @@
                             title: title,
                             description: description ? description : null,
                             categories: categories.join(","),
-                            uploaddate: uploadDate,
                             addedAt: firebase.firestore.FieldValue.serverTimestamp()
                         }, { merge: true });
                     })
