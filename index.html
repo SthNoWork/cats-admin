@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Upload</title>
+</head>
+
+<body>
+    <h1>Admin Media Upload</h1>
+
+    <div>
+        <button type="button" id="loginBtn" onclick="loginWithGoogle()">Login with Google</button>
+        <button type="button" id="logoutBtn" onclick="logoutUser()" disabled>Logout</button>
+    </div>
+
+    <p id="authStatus">Checking login...</p>
+
+    <div>
+        <label for="media">Media</label>
+        <input type="file" id="media" accept="image/*,video/*" multiple>
+    </div>
+
+    <div>
+        <label for="title">Title</label>
+        <input type="text" id="title" placeholder="Title" />
+    </div>
+
+    <div>
+        <label for="description">Description (optional)</label>
+        <textarea id="description" placeholder="Description"></textarea>
+    </div>
+
+    <div>
+        <label for="categories">Categories (multi-select)</label>
+        <select id="categories" multiple size="5"></select>
+    </div>
+
+    <div>
+        <button type="button" id="initBtn" onclick="initializeDefaultCategories()" disabled>Initialize Default Categories</button>
+    </div>
+
+    <p id="initStatus"></p>
+
+    <div>
+        <button type="button" id="uploadBtn" onclick="uploadMedia()" disabled>Upload</button>
+    </div>
+
+    <p id="status"></p>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="firebase.js"></script>
+    <script src="cloudinary.js"></script>
+    <script src="database-initializer.js"></script>
+
+    <script>
+        var currentUser = null;
+
+        function setAuthStatus(message) {
+            document.getElementById("authStatus").innerText = message;
+        }
+
+        function setActionState(isLoggedIn) {
+            document.getElementById("uploadBtn").disabled = !isLoggedIn;
+            document.getElementById("initBtn").disabled = !isLoggedIn;
+            document.getElementById("loginBtn").disabled = isLoggedIn;
+            document.getElementById("logoutBtn").disabled = !isLoggedIn;
+        }
+
+        function loginWithGoogle() {
+            auth.signInWithPopup(googleProvider)
+                .catch(function (error) {
+                    setAuthStatus("Login error: " + error.message);
+                });
+        }
+
+        function logoutUser() {
+            auth.signOut()
+                .catch(function (error) {
+                    setAuthStatus("Logout error: " + error.message);
+                });
+        }
+
+        auth.onAuthStateChanged(function (user) {
+            currentUser = user;
+
+            if (user) {
+                setAuthStatus("Logged in as " + user.email + " (UID: " + user.uid + ")");
+                setActionState(true);
+                loadCategories();
+            } else {
+                setAuthStatus("Please login with Google to upload media.");
+                setActionState(false);
+            }
+        });
+
+        function loadCategories() {
+            var categoriesSelect = document.getElementById("categories");
+            categoriesSelect.innerHTML = "";
+
+            firestore.collection("config").doc("categories")
+                .get()
+                .then(function (doc) {
+                    var data;
+                    var categoryIds;
+                    var id;
+                    var i;
+                    var option;
+
+                    if (!doc.exists) {
+                        setStatus("No categories found. Click Initialize Default Categories.");
+                        return;
+                    }
+
+                    data = doc.data();
+                    categoryIds = [];
+
+                    if (data) {
+                        for (id in data) {
+                            if (Object.prototype.hasOwnProperty.call(data, id) && !isNaN(parseInt(id, 10))) {
+                                categoryIds.push(id);
+                            }
+                        }
+                    }
+
+                    categoryIds.sort(function (a, b) {
+                        return parseInt(a, 10) - parseInt(b, 10);
+                    });
+
+                    if (categoryIds.length === 0) {
+                        setStatus("No categories found. Click Initialize Default Categories.");
+                        return;
+                    }
+
+                    for (i = 0; i < categoryIds.length; i = i + 1) {
+                        id = categoryIds[i];
+                        option = document.createElement("option");
+                        option.value = id;
+                        option.textContent = id + " - " + data[id];
+                        categoriesSelect.appendChild(option);
+                    }
+
+                    setStatus("Categories loaded.");
+                })
+                .catch(function (error) {
+                    setStatus("Error loading categories: " + error.message);
+                });
+        }
+
+        function getSelectedCategories() {
+            var select = document.getElementById("categories");
+            var selected = [];
+            var i;
+
+            for (i = 0; i < select.options.length; i = i + 1) {
+                if (select.options[i].selected) {
+                    selected.push(select.options[i].value);
+                }
+            }
+
+            return selected;
+        }
+
+        function formatUploadDate(date) {
+            var year = date.getFullYear();
+            var month = String(date.getMonth() + 1).padStart(2, "0");
+            var day = String(date.getDate()).padStart(2, "0");
+            return year + "/" + month + "/" + day;
+        }
+
+        function setStatus(message) {
+            document.getElementById("status").innerText = message;
+        }
+
+        function getNextCatDocumentId() {
+            return firestore.collection("cats").get()
+                .then(function (snapshot) {
+                    var maxId = 0;
+
+                    snapshot.forEach(function (doc) {
+                        var numericId = parseInt(doc.id, 10);
+                        if (!isNaN(numericId) && numericId > maxId) {
+                            maxId = numericId;
+                        }
+                    });
+
+                    return String(maxId + 1);
+                });
+        }
+
+        function uploadFilesToCloudinary(fileList, done) {
+            var urls = [];
+            var index = 0;
+
+            function uploadNext() {
+                if (index >= fileList.length) {
+                    done(null, urls);
+                    return;
+                }
+
+                setStatus("Uploading media " + (index + 1) + " of " + fileList.length + "...");
+
+                uploadToCloudinary(fileList[index], function (error, cloudinaryUrl) {
+                    if (error) {
+                        done(error, null);
+                        return;
+                    }
+
+                    urls.push(cloudinaryUrl);
+                    index = index + 1;
+                    uploadNext();
+                });
+            }
+
+            uploadNext();
+        }
+
+        function uploadMedia() {
+            var fileInput = document.getElementById("media");
+            var titleInput = document.getElementById("title");
+            var descriptionInput = document.getElementById("description");
+
+            if (!currentUser) {
+                setStatus("Please login first.");
+                return;
+            }
+
+            var files = fileInput.files;
+            var title = titleInput.value.trim();
+            var description = descriptionInput.value.trim();
+            var categories = getSelectedCategories();
+
+            if (!files || files.length === 0) {
+                setStatus("Please choose one or more media files.");
+                return;
+            }
+
+            if (!title) {
+                setStatus("Please enter a title.");
+                return;
+            }
+
+            if (categories.length === 0) {
+                setStatus("Please choose at least one category.");
+                return;
+            }
+
+            var now = new Date();
+            var uploadDate = formatUploadDate(now);
+
+            uploadFilesToCloudinary(files, function (error, cloudinaryUrls) {
+                if (error) {
+                    setStatus("Upload error: " + error);
+                    return;
+                }
+
+                setStatus("Saving to Firestore...");
+
+                getNextCatDocumentId()
+                    .then(function (nextId) {
+                        var thumbnail = cloudinaryUrls[0] || null;
+                        var mediaList = cloudinaryUrls.length > 1 ? cloudinaryUrls : null;
+
+                        if (!thumbnail) {
+                            throw new Error("Thumbnail is missing after upload.");
+                        }
+
+                        return firestore.collection("cats").doc(nextId).set({
+                            medias: mediaList,
+                            thumbnail: thumbnail,
+                            title: title,
+                            description: description ? description : null,
+                            categories: categories.join(","),
+                            uploaddate: uploadDate,
+                            addedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        }, { merge: true });
+                    })
+                    .then(function () {
+                        setStatus("Upload complete.");
+                        fileInput.value = "";
+                        titleInput.value = "";
+                        descriptionInput.value = "";
+                        document.getElementById("categories").selectedIndex = -1;
+                    })
+                    .catch(function (error) {
+                        setStatus("Error: " + error.message);
+                    });
+            });
+        }
+    </script>
+</body>
+
+</html>
