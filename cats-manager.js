@@ -62,6 +62,23 @@
     return /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url || "");
   }
 
+  function getOptimizedThumbnailUrl(url) {
+    var raw = String(url || "").trim();
+    if (!raw) return "";
+
+    if (
+      window.AdminEfficiencyMedia &&
+      typeof window.AdminEfficiencyMedia.getListThumbnail === "function"
+    ) {
+      return window.AdminEfficiencyMedia.getListThumbnail(raw);
+    }
+
+    return raw;
+  }
+
+  var PREVIEW_MAX_DIMENSION = 1200;
+  var PREVIEW_JPEG_QUALITY = 0.82;
+
   function inferMimeTypeFromName(fileName) {
     var name = String(fileName || "").toLowerCase();
     if (/\.jpe?g$/i.test(name)) return "image/jpeg";
@@ -118,6 +135,69 @@
       };
       reader.readAsDataURL(blobLike);
     });
+  }
+
+  function loadImageFromUrl(url) {
+    return new Promise(function (resolve, reject) {
+      var image = new Image();
+      image.onload = function () {
+        resolve(image);
+      };
+      image.onerror = function () {
+        reject(new Error("Image decode failed"));
+      };
+      image.src = url;
+    });
+  }
+
+  function buildDownscaledPreviewDataUrl(item) {
+    var previewBlob = getPreviewBlob(item) || item.file;
+    if (!previewBlob) {
+      return Promise.reject(new Error("Missing preview source"));
+    }
+
+    var tempUrl;
+    try {
+      tempUrl = URL.createObjectURL(previewBlob);
+    } catch (_error) {
+      return readFileAsDataUrl(previewBlob);
+    }
+
+    return loadImageFromUrl(tempUrl)
+      .then(function (image) {
+        var srcW = image.naturalWidth || image.width || 0;
+        var srcH = image.naturalHeight || image.height || 0;
+        if (!srcW || !srcH) {
+          return readFileAsDataUrl(previewBlob);
+        }
+
+        var longestSide = Math.max(srcW, srcH);
+        var scale =
+          longestSide > PREVIEW_MAX_DIMENSION
+            ? PREVIEW_MAX_DIMENSION / longestSide
+            : 1;
+        var targetW = Math.max(1, Math.round(srcW * scale));
+        var targetH = Math.max(1, Math.round(srcH * scale));
+
+        var canvas = document.createElement("canvas");
+        canvas.width = targetW;
+        canvas.height = targetH;
+
+        var ctx = canvas.getContext("2d");
+        if (!ctx) {
+          return readFileAsDataUrl(previewBlob);
+        }
+
+        ctx.drawImage(image, 0, 0, targetW, targetH);
+        try {
+          return canvas.toDataURL("image/jpeg", PREVIEW_JPEG_QUALITY);
+        } catch (_error) {
+          return readFileAsDataUrl(previewBlob);
+        }
+      })
+      .finally(function () {
+        URL.revokeObjectURL(tempUrl);
+      });
   }
 
   function getMediaPreviewUrl(item) {
@@ -210,17 +290,25 @@
 
       state.mediaItems.push(item);
 
-      // Data URL preview is more reliable on some mobile browsers than blob URLs.
+      // Build a smaller preview image to avoid mobile memory spikes on high-res files.
       if (item.mediaType === "image") {
-        var previewBlob = getPreviewBlob(item) || file;
-        readFileAsDataUrl(previewBlob)
+        buildDownscaledPreviewDataUrl(item)
           .then(function (dataUrl) {
             if (!dataUrl) return;
             item.previewDataUrl = dataUrl;
             renderMediaPreview();
           })
           .catch(function () {
-            // Keep object URL preview path as fallback.
+            var previewBlob = getPreviewBlob(item) || file;
+            readFileAsDataUrl(previewBlob)
+              .then(function (dataUrl) {
+                if (!dataUrl) return;
+                item.previewDataUrl = dataUrl;
+                renderMediaPreview();
+              })
+              .catch(function () {
+                // Keep object URL preview path as last fallback.
+              });
           });
       }
     });
@@ -293,14 +381,15 @@
         var img = document.createElement("img");
         img.src = getMediaPreviewUrl(item);
         img.className = "w-full h-full object-cover";
+        img.loading = "lazy";
+        img.decoding = "async";
 
         img.addEventListener("error", function () {
           if (item.kind !== "file" || item.previewDataUrl) {
             return;
           }
 
-          var fallbackBlob = getPreviewBlob(item) || item.file;
-          readFileAsDataUrl(fallbackBlob)
+          buildDownscaledPreviewDataUrl(item)
             .then(function (dataUrl) {
               if (!dataUrl) return;
               item.previewDataUrl = dataUrl;
@@ -742,6 +831,7 @@
               ? data.addedAt.toDate().toLocaleDateString()
               : "?";
             var thumb = data.thumbnail || "";
+            var optimizedThumb = getOptimizedThumbnailUrl(thumb);
             var title = escapeHtml(data.title || "Untitled");
             var catIds = (data.categories || "")
               .split(",")
@@ -757,10 +847,10 @@
             if (thumb) {
               html +=
                 "<img src='" +
-                escapeHtml(thumb) +
+                escapeHtml(optimizedThumb) +
                 "' alt='" +
                 title +
-                "' class='w-16 h-16 rounded-lg object-cover flex-shrink-0' />";
+                "' loading='lazy' decoding='async' class='w-16 h-16 rounded-lg object-cover flex-shrink-0' />";
             } else {
               html +=
                 "<div class='w-16 h-16 rounded-lg bg-surface-container flex items-center justify-center text-tertiary'><span class='material-symbols-outlined'>image</span></div>";

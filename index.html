@@ -1,138 +1,164 @@
-<!DOCTYPE html>
+<!doctype html>
 <html class="light" lang="en">
-
-<head>
+  <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Curator Hub - Admin Login</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "background": "#fff9ec",
-                        "tertiary-dim": "#694f00",
-                        "surface": "#fff9ec",
-                        "inverse-on-surface": "#a29d8c",
-                        "on-primary-container": "#5f3000",
-                        "primary-fixed-dim": "#ff9b40",
-                        "on-error": "#fff7f6",
-                        "primary-fixed": "#ffaf6e",
-                        "surface-container-high": "#f0e8cc",
-                        "primary": "#924d00",
-                        "surface-container": "#f6eed5",
-                        "primary-container": "#ffaf6e",
-                        "on-secondary-fixed": "#324e36",
-                        "outline-variant": "#b9b296",
-                        "secondary": "#48664c",
-                        "on-tertiary-container": "#5f4800",
-                        "secondary-fixed": "#d7fad8",
-                        "surface-container-low": "#fbf3dd",
-                        "on-secondary-container": "#446147",
-                        "error-dim": "#821a01",
-                        "inverse-surface": "#100e05",
-                        "on-tertiary": "#fff8f0",
-                        "secondary-fixed-dim": "#c9ebca",
-                        "surface-container-lowest": "#ffffff",
-                        "on-secondary": "#e9ffe7",
-                        "on-primary-fixed-variant": "#6c3800",
-                        "on-error-container": "#671200",
-                        "secondary-dim": "#3d5a41",
-                        "on-background": "#37331e",
-                        "on-surface": "#37331e",
-                        "secondary-container": "#d7fad8",
-                        "primary-dim": "#804300",
-                        "surface-tint": "#924d00",
-                        "error": "#aa371c",
-                        "surface-dim": "#e3dab9",
-                        "on-primary-fixed": "#401f00",
-                        "outline": "#817b61",
-                        "tertiary": "#775b06",
-                        "on-primary": "#fff7f4",
-                        "surface-bright": "#fff9ec",
-                        "error-container": "#fa7150",
-                        "surface-container-highest": "#ebe2c4",
-                        "tertiary-container": "#f9d377",
-                        "on-tertiary-fixed-variant": "#6a5100",
-                        "tertiary-fixed-dim": "#eac56b",
-                        "on-secondary-fixed-variant": "#4e6b51",
-                        "surface-variant": "#ebe2c4",
-                        "on-tertiary-fixed": "#483500",
-                        "tertiary-fixed": "#f9d377",
-                        "inverse-primary": "#f68f2b",
-                        "on-surface-variant": "#655f47"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "1rem",
-                        "lg": "2rem",
-                        "xl": "3rem",
-                        "full": "9999px"
-                    },
-                    "fontFamily": {
-                        "headline": ["Plus Jakarta Sans", "sans-serif"],
-                        "body": ["Plus Jakarta Sans", "sans-serif"],
-                        "label": ["Plus Jakarta Sans", "sans-serif"]
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              background: "#fff9ec",
+              "tertiary-dim": "#694f00",
+              surface: "#fff9ec",
+              "inverse-on-surface": "#a29d8c",
+              "on-primary-container": "#5f3000",
+              "primary-fixed-dim": "#ff9b40",
+              "on-error": "#fff7f6",
+              "primary-fixed": "#ffaf6e",
+              "surface-container-high": "#f0e8cc",
+              primary: "#924d00",
+              "surface-container": "#f6eed5",
+              "primary-container": "#ffaf6e",
+              "on-secondary-fixed": "#324e36",
+              "outline-variant": "#b9b296",
+              secondary: "#48664c",
+              "on-tertiary-container": "#5f4800",
+              "secondary-fixed": "#d7fad8",
+              "surface-container-low": "#fbf3dd",
+              "on-secondary-container": "#446147",
+              "error-dim": "#821a01",
+              "inverse-surface": "#100e05",
+              "on-tertiary": "#fff8f0",
+              "secondary-fixed-dim": "#c9ebca",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary": "#e9ffe7",
+              "on-primary-fixed-variant": "#6c3800",
+              "on-error-container": "#671200",
+              "secondary-dim": "#3d5a41",
+              "on-background": "#37331e",
+              "on-surface": "#37331e",
+              "secondary-container": "#d7fad8",
+              "primary-dim": "#804300",
+              "surface-tint": "#924d00",
+              error: "#aa371c",
+              "surface-dim": "#e3dab9",
+              "on-primary-fixed": "#401f00",
+              outline: "#817b61",
+              tertiary: "#775b06",
+              "on-primary": "#fff7f4",
+              "surface-bright": "#fff9ec",
+              "error-container": "#fa7150",
+              "surface-container-highest": "#ebe2c4",
+              "tertiary-container": "#f9d377",
+              "on-tertiary-fixed-variant": "#6a5100",
+              "tertiary-fixed-dim": "#eac56b",
+              "on-secondary-fixed-variant": "#4e6b51",
+              "surface-variant": "#ebe2c4",
+              "on-tertiary-fixed": "#483500",
+              "tertiary-fixed": "#f9d377",
+              "inverse-primary": "#f68f2b",
+              "on-surface-variant": "#655f47",
+            },
+            borderRadius: {
+              DEFAULT: "1rem",
+              lg: "2rem",
+              xl: "3rem",
+              full: "9999px",
+            },
+            fontFamily: {
+              headline: ["Plus Jakarta Sans", "sans-serif"],
+              body: ["Plus Jakarta Sans", "sans-serif"],
+              label: ["Plus Jakarta Sans", "sans-serif"],
+            },
+          },
+        },
+      };
     </script>
     <style>
-        body {
-            font-family: "Plus Jakarta Sans", sans-serif;
-        }
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
 
-        .ambient-shadow {
-            box-shadow: 0 8px 40px rgba(55, 51, 30, 0.06);
-        }
+      .ambient-shadow {
+        box-shadow: 0 8px 40px rgba(55, 51, 30, 0.06);
+      }
 
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
+      .loading {
+        opacity: 0.6;
+        pointer-events: none;
+      }
     </style>
-</head>
+  </head>
 
-<body class="bg-surface text-on-surface h-screen flex items-center justify-center selection:bg-primary-container selection:text-on-primary-container">
-
+  <body
+    class="bg-surface text-on-surface h-screen flex items-center justify-center selection:bg-primary-container selection:text-on-primary-container"
+  >
     <div class="w-full max-w-md flex flex-col items-center gap-8 px-6">
-        <!-- Brand Section -->
-        <div class="flex flex-col items-center gap-4">
-            <div class="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center font-bold text-5xl ambient-shadow">
-                <span>🐱</span>
-            </div>
-            <div class="text-center">
-                <h1 class="text-4xl font-headline font-bold text-on-surface">Curator Hub</h1>
-                <p class="text-tertiary text-base mt-2">Cat Sanctuary Admin</p>
-            </div>
+      <!-- Brand Section -->
+      <div class="flex flex-col items-center gap-4">
+        <div
+          class="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center font-bold text-5xl ambient-shadow"
+        >
+          <span>🐱</span>
+        </div>
+        <div class="text-center">
+          <h1 class="text-4xl font-headline font-bold text-on-surface">
+            Curator Hub
+          </h1>
+          <p class="text-tertiary text-base mt-2">Cat Sanctuary Admin</p>
+        </div>
+      </div>
+
+      <!-- Login Card -->
+      <div
+        class="w-full bg-surface-container-lowest rounded-xl p-8 ambient-shadow flex flex-col gap-6 border border-outline-variant/20"
+      >
+        <div class="text-center">
+          <h2 class="text-2xl font-headline font-bold text-on-surface mb-2">
+            Welcome Back
+          </h2>
+          <p class="text-on-surface-variant text-sm">
+            Sign in with Google to manage the sanctuary.
+          </p>
         </div>
 
-        <!-- Login Card -->
-        <div class="w-full bg-surface-container-lowest rounded-xl p-8 ambient-shadow flex flex-col gap-6 border border-outline-variant/20">
-            <div class="text-center">
-                <h2 class="text-2xl font-headline font-bold text-on-surface mb-2">Welcome Back</h2>
-                <p class="text-on-surface-variant text-sm">Sign in with Google to manage the sanctuary.</p>
-            </div>
+        <!-- Login Button -->
+        <button
+          type="button"
+          id="loginBtn"
+          onclick="loginWithGoogle()"
+          class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary py-4 px-6 rounded-full font-bold text-lg ambient-shadow hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-3"
+        >
+          <span class="material-symbols-outlined">login</span>
+          <span>Sign In with Google</span>
+        </button>
 
-            <!-- Login Button -->
-            <button type="button" id="loginBtn" onclick="loginWithGoogle()" class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary py-4 px-6 rounded-full font-bold text-lg ambient-shadow hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-3">
-                <span class="material-symbols-outlined">login</span>
-                <span>Sign In with Google</span>
-            </button>
+        <!-- Status Message -->
+        <div id="statusMessage" class="text-center text-sm"></div>
+      </div>
 
-            <!-- Status Message -->
-            <div id="statusMessage" class="text-center text-sm"></div>
-        </div>
-
-        <!-- Security Notice -->
-        <div class="text-center text-xs text-on-surface-variant max-w-sm space-y-1">
-            <p class="font-medium">Security Notice</p>
-            <p>This is a secure admin dashboard. Only whitelisted Google accounts can access the sanctuary management tools.</p>
-        </div>
+      <!-- Security Notice -->
+      <div
+        class="text-center text-xs text-on-surface-variant max-w-sm space-y-1"
+      >
+        <p class="font-medium">Security Notice</p>
+        <p>
+          This is a secure admin dashboard. Only whitelisted Google accounts can
+          access the sanctuary management tools.
+        </p>
+      </div>
     </div>
 
     <!-- Firebase Scripts -->
@@ -140,40 +166,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="firebase.js"></script>
-
-    <script>
-        function loginWithGoogle() {
-            var loginBtn = document.getElementById("loginBtn");
-            var statusMsg = document.getElementById("statusMessage");
-
-            loginBtn.classList.add("loading");
-            statusMsg.innerText = "Signing in...";
-            statusMsg.className = "text-center text-sm text-on-surface-variant";
-
-            auth.signInWithPopup(googleProvider)
-                .then(function (result) {
-                    statusMsg.innerText = "✓ Welcome! Redirecting...";
-                    statusMsg.className = "text-center text-sm text-secondary font-bold";
-
-                    setTimeout(function () {
-                        window.location.href = "admin.html";
-                    }, 800);
-                })
-                .catch(function (error) {
-                    loginBtn.classList.remove("loading");
-                    statusMsg.innerText = "Login failed: " + error.message;
-                    statusMsg.className = "text-center text-sm text-error";
-                });
-        }
-
-        // Check if user is already logged in - redirect to admin
-        auth.onAuthStateChanged(function (user) {
-            if (user) {
-                window.location.href = "admin.html";
-            }
-        });
-    </script>
-
-</body>
-
+    <script src="admin-login.js"></script>
+    <script src="sw-register.js"></script>
+  </body>
 </html>
