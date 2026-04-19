@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Curator Hub - Manage Cats</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="tailwind-theme.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="admin-shared.css" rel="stylesheet" />
+    <style>
+        .preview-thumb {
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .preview-thumb.selected {
+            border-color: #924d00;
+            box-shadow: 0 0 0 3px rgba(146, 77, 0, 0.2);
+        }
+
+        .preview-thumb:hover {
+            border-color: #924d00;
+        }
+    </style>
+</head>
+
+<body class="bg-surface text-on-surface min-h-screen md:h-screen flex flex-col md:flex-row overflow-y-auto md:overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+
+    <!-- Sidebar -->
+    <nav class="w-full md:w-72 flex-shrink-0 bg-surface-container-low flex flex-col justify-between p-4 md:p-6 border-b md:border-b-0 md:border-r border-outline-variant/20">
+        <div class="flex flex-col gap-4 md:gap-8">
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center text-2xl">
+                    🐱
+                </div>
+                <div>
+                    <h1 class="text-lg font-headline font-bold text-on-surface">Curator Hub</h1>
+                    <p class="text-xs text-tertiary">Admin</p>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="flex md:flex-col gap-2 overflow-x-auto pb-1 md:pb-0">
+                <a href="admin.html" class="flex items-center gap-3 px-4 py-3 rounded-full text-on-surface hover:bg-surface-container transition-colors">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span class="font-medium">Dashboard</span>
+                </a>
+                <a href="cats.html" class="flex items-center gap-3 px-4 py-3 rounded-full bg-surface-container-lowest ambient-shadow text-on-surface font-bold">
+                    <span class="material-symbols-outlined">pets</span>
+                    <span>Manage Cats</span>
+                </a>
+                <a href="categories.html" class="flex items-center gap-3 px-4 py-3 rounded-full text-on-surface hover:bg-surface-container transition-colors">
+                    <span class="material-symbols-outlined">category</span>
+                    <span class="font-medium">Categories</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- User & Logout -->
+        <div class="flex gap-2 md:flex-col md:gap-4">
+            <div class="px-4 py-3 rounded-full bg-surface-container-lowest flex flex-col flex-1 md:flex-none">
+                <span id="userEmail" class="text-sm font-bold text-on-surface">Loading...</span>
+                <span class="text-xs text-tertiary">Head Curator</span>
+            </div>
+            <button type="button" onclick="logoutUser()" class="flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-error-container text-on-error-container font-bold hover:scale-[1.02] active:scale-95 transition-transform">
+                <span class="material-symbols-outlined">logout</span>
+                <span class="text-sm">Logout</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <!-- Header -->
+        <header class="min-h-20 bg-surface-container-lowest border-b border-outline-variant/20 px-4 sm:px-6 lg:px-10 py-4 flex items-center justify-between">
+            <div>
+                <h2 class="text-3xl font-headline font-bold text-on-surface">Manage Cats</h2>
+                <p class="text-tertiary text-sm">Add, edit, or remove cat entries from the sanctuary.</p>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-10 py-6 lg:py-8 flex flex-col xl:flex-row gap-6 lg:gap-10">
+            <!-- Left Column: Upload Form -->
+            <div id="entryFormColumn" class="w-full xl:w-2/5 xl:flex-shrink-0">
+                    <div class="panel-card p-6 sm:p-8 xl:sticky xl:top-8">
+                    <h3 class="text-xl font-headline font-bold text-on-surface mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">add_circle</span>
+                        New Entry
+                    </h3>
+
+                    <!-- Media Upload -->
+                    <div class="mb-6">
+                        <label class="text-xs font-bold text-tertiary uppercase tracking-wider mb-2 block">Media (Images/Videos)</label>
+                        <div id="fileDropZone" class="w-full h-32 bg-surface-container-high rounded-lg border-2 border-dashed border-outline-variant/30 flex flex-col items-center justify-center cursor-pointer hover:bg-surface-container hover:border-primary/50 transition-all">
+                            <input type="file" id="media" accept="image/*,video/*" multiple style="display: none;" />
+                            <span class="material-symbols-outlined text-tertiary text-3xl mb-2" style="font-variation-settings: 'FILL' 1;">add_photo_alternate</span>
+                            <span class="text-sm text-tertiary font-medium text-center">Click or drag files</span>
+                        </div>
+                        <div class="mt-2 flex gap-2">
+                            <input id="mediaUrlInput" type="url" class="flex-1 bg-surface-container-high border-none rounded-lg px-3 py-2 text-on-surface focus:ring-0" placeholder="Or paste media URL..." />
+                            <button id="addMediaUrlBtn" type="button" class="bg-surface-container text-on-surface px-3 py-2 rounded-lg font-bold hover:bg-surface-container-highest transition-colors">Add URL</button>
+                        </div>
+                    </div>
+
+                    <!-- Image Preview Grid -->
+                    <div id="previewContainer" class="mb-6 hidden">
+                        <label class="text-xs font-bold text-tertiary uppercase tracking-wider mb-2 block">Selected Media <span class="text-primary">(click to set thumbnail)</span></label>
+                        <div id="previewGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        </div>
+                        <p id="fileCount" class="text-xs text-on-surface-variant mt-2"></p>
+                    </div>
+
+                    <!-- Title -->
+                    <div class="mb-4">
+                        <label class="text-xs font-bold text-tertiary uppercase tracking-wider mb-2 block">Title *</label>
+                        <input id="title" type="text" class="w-full bg-surface-container-high border-none rounded-lg px-4 py-3 text-on-surface focus:ring-0" placeholder="e.g. Sir Pounce" />
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label class="text-xs font-bold text-tertiary uppercase tracking-wider mb-2 block">Story (Optional)</label>
+                        <textarea id="description" class="w-full bg-surface-container-high border-none rounded-lg px-4 py-3 text-on-surface focus:ring-0 resize-none" placeholder="Tell us about them..." rows="3"></textarea>
+                    </div>
+
+                    <!-- Categories -->
+                    <div class="mb-6">
+                        <label class="text-xs font-bold text-tertiary uppercase tracking-wider mb-2 block">Categories *</label>
+                        <div id="categoriesContainer" class="flex flex-wrap gap-2">
+                            <p class="text-sm text-on-surface-variant">Loading...</p>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex gap-2 mb-4">
+                        <button type="button" id="uploadBtn" class="flex-1 bg-gradient-to-br from-primary to-primary-container text-on-primary py-3 px-4 rounded-full font-bold hover:scale-[1.02] active:scale-95 transition-transform">
+                            Upload
+                        </button>
+                        <button type="button" id="cancelEditBtn" class="flex-0 bg-surface-container text-on-surface px-4 py-3 rounded-full font-bold hover:bg-surface-container-highest transition-colors hidden">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                        <button type="button" id="resetBtn" class="flex-0 bg-surface-container text-on-surface px-4 py-3 rounded-full font-bold hover:bg-surface-container-highest transition-colors">
+                            <span class="material-symbols-outlined">refresh</span>
+                        </button>
+                    </div>
+
+                    <!-- Status -->
+                    <div id="uploadStatus" class="text-sm rounded-lg p-3 bg-surface-container text-on-surface text-center min-h-12 flex items-center justify-center"></div>
+                    <div id="processLog" class="mt-3 max-h-32 overflow-y-auto rounded-lg bg-surface-container p-3 space-y-1"></div>
+                </div>
+            </div>
+
+            <!-- Right Column: Cat List -->
+            <div class="flex-1 min-w-0">
+                       <div class="panel-card p-6 xl:sticky xl:top-8">
+                    <div class="mb-4 flex items-center justify-between gap-3">
+                        <h3 class="text-lg font-bold text-on-surface flex items-center gap-2">
+                            <span class="material-symbols-outlined">pets</span>
+                            All Cats
+                        </h3>
+                        <button id="reloadCatsBtn" type="button" class="px-3 py-1.5 rounded-full bg-surface-container text-on-surface text-sm font-bold hover:bg-surface-container-highest transition-colors flex items-center gap-1">
+                            <span class="material-symbols-outlined text-base">refresh</span>
+                            Reload
+                        </button>
+                    </div>
+
+                    <!-- Search & Filter -->
+                    <div class="mb-6">
+                        <input id="searchInput" type="text" class="w-full bg-surface-container-high border-none rounded-lg px-4 py-2 text-on-surface focus:bg-surface-container-lowest transition-colors focus:ring-0" placeholder="Search by title..." />
+                    </div>
+
+                    <!-- List -->
+                    <div id="catsList" class="space-y-2 max-h-none xl:max-h-[400px] overflow-y-visible xl:overflow-y-auto">
+                        <p class="text-center text-on-surface-variant py-12">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="firebase.js"></script>
+    <script src="cloudinary.js"></script>
+    <script src="cats-manager.js"></script>
+
+</body>
+
+</html>

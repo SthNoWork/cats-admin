@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Curator Hub - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="tailwind-theme.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="admin-shared.css" rel="stylesheet" />
+</head>
+
+<body class="bg-surface text-on-surface min-h-screen md:h-screen flex flex-col md:flex-row overflow-y-auto md:overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+
+    <!-- Sidebar -->
+    <nav class="w-full md:w-72 flex-shrink-0 bg-surface-container-low flex flex-col justify-between p-4 md:p-6 border-b md:border-b-0 md:border-r border-outline-variant/20">
+        <div class="flex flex-col gap-4 md:gap-8">
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center text-2xl">
+                    🐱
+                </div>
+                <div>
+                    <h1 class="text-lg font-headline font-bold text-on-surface">Curator Hub</h1>
+                    <p class="text-xs text-tertiary">Admin</p>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="flex md:flex-col gap-2 overflow-x-auto pb-1 md:pb-0">
+                <a href="admin.html" class="flex items-center gap-3 px-4 py-3 rounded-full bg-surface-container-lowest ambient-shadow text-on-surface font-bold">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="cats.html" class="flex items-center gap-3 px-4 py-3 rounded-full text-on-surface hover:bg-surface-container transition-colors">
+                    <span class="material-symbols-outlined">pets</span>
+                    <span class="font-medium">Manage Cats</span>
+                </a>
+                <a href="categories.html" class="flex items-center gap-3 px-4 py-3 rounded-full text-on-surface hover:bg-surface-container transition-colors">
+                    <span class="material-symbols-outlined">category</span>
+                    <span class="font-medium">Categories</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- User & Logout -->
+        <div class="flex gap-2 md:flex-col md:gap-4">
+            <div class="px-4 py-3 rounded-full bg-surface-container-lowest flex flex-col flex-1 md:flex-none">
+                <span id="userEmail" class="text-sm font-bold text-on-surface">Loading...</span>
+                <span class="text-xs text-tertiary">Head Curator</span>
+            </div>
+            <button type="button" onclick="logoutUser()" class="flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-error-container text-on-error-container font-bold hover:scale-[1.02] active:scale-95 transition-transform">
+                <span class="material-symbols-outlined">logout</span>
+                <span class="text-sm">Logout</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <!-- Header -->
+        <header class="min-h-20 bg-surface-container-lowest border-b border-outline-variant/20 px-4 sm:px-6 lg:px-10 py-4 flex items-center justify-between">
+            <div>
+                <h2 class="text-3xl font-headline font-bold text-on-surface">Dashboard</h2>
+                <p class="text-tertiary text-sm">Sanctuary statistics and overview.</p>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-10 py-6 lg:py-8">
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Total Cats -->
+                <div class="panel-card p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-tertiary text-sm font-medium">Total Cats</p>
+                            <p class="text-4xl font-bold text-on-surface mt-3" id="statCats">0</p>
+                            <p class="text-xs text-tertiary mt-2">In the sanctuary</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center">
+                            <span class="material-symbols-outlined text-primary text-2xl">pets</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Categories -->
+                <div class="panel-card p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-tertiary text-sm font-medium">Categories</p>
+                            <p class="text-4xl font-bold text-on-surface mt-3" id="statCategories">0</p>
+                            <p class="text-xs text-tertiary mt-2">Organized collections</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center">
+                            <span class="material-symbols-outlined text-secondary text-2xl">category</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Uploads (Today) -->
+                <div class="panel-card p-6">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-tertiary text-sm font-medium">Recent Uploads</p>
+                            <p class="text-4xl font-bold text-on-surface mt-3" id="statRecent">0</p>
+                            <p class="text-xs text-tertiary mt-2">Last 7 days</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-tertiary-container flex items-center justify-center">
+                            <span class="material-symbols-outlined text-tertiary text-2xl">cloud_upload</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Latest Entries & Storage -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Recent Entries -->
+                <div class="panel-card p-6">
+                    <h3 class="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">history</span>
+                        Recent Entries
+                    </h3>
+                    <div id="recentList" class="space-y-3 max-h-64 overflow-y-auto">
+                        <p class="text-sm text-on-surface-variant text-center py-8">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="panel-card p-6">
+                    <h3 class="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-secondary">flash_on</span>
+                        Quick Actions
+                    </h3>
+                    <div class="space-y-3 flex flex-col">
+                        <a href="cats.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors group">
+                            <span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">add_circle</span>
+                            <div>
+                                <p class="font-bold text-on-surface">Upload New Cat</p>
+                                <p class="text-xs text-tertiary">Add media and details</p>
+                            </div>
+                        </a>
+                        <a href="categories.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors group">
+                            <span class="material-symbols-outlined text-secondary group-hover:scale-110 transition-transform">category</span>
+                            <div>
+                                <p class="font-bold text-on-surface">Manage Categories</p>
+                                <p class="text-xs text-tertiary">Add or edit groupings</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Info -->
+            <div class="mt-8 panel-card p-6">
+                <h3 class="text-lg font-bold text-on-surface mb-4">Account Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <p class="text-tertiary font-medium">Email</p>
+                        <p id="accEmail" class="text-on-surface font-bold mt-1">--</p>
+                    </div>
+                    <div>
+                        <p class="text-tertiary font-medium">User ID</p>
+                        <p id="accUID" class="text-on-surface font-mono text-xs mt-1 break-all">--</p>
+                    </div>
+                    <div>
+                        <p class="text-tertiary font-medium">Role</p>
+                        <p class="text-on-surface font-bold mt-1">Head Curator (Admin)</p>
+                    </div>
+                    <div>
+                        <p class="text-tertiary font-medium">Last Login</p>
+                        <p id="accLastLogin" class="text-on-surface font-bold mt-1">--</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="firebase.js"></script>
+
+    <script>
+        var currentUser = null;
+
+        // Auth check
+        auth.onAuthStateChanged(function (user) {
+            if (!user) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            currentUser = user;
+            document.getElementById("userEmail").innerText = user.email || "Admin";
+            document.getElementById("accEmail").innerText = user.email || "--";
+            document.getElementById("accUID").innerText = user.uid || "--";
+            document.getElementById("accLastLogin").innerText = new Date(user.metadata.lastSignInTime).toLocaleDateString();
+
+            loadStats();
+            loadRecentEntries();
+        });
+
+        function logoutUser() {
+            if (!confirm("Logout?")) return;
+            auth.signOut().then(function () {
+                window.location.href = "index.html";
+            });
+        }
+
+        function loadStats() {
+            if (!currentUser) return;
+
+            // Total cats
+            firestore.collection("cats").get()
+                .then(function (snapshot) {
+                    document.getElementById("statCats").innerText = snapshot.size;
+                });
+
+            // Total categories
+            firestore.collection("config").doc("categories").get()
+                .then(function (doc) {
+                    if (!doc.exists) {
+                        document.getElementById("statCategories").innerText = "0";
+                        return;
+                    }
+
+                    var data = doc.data();
+                    var count = 0;
+
+                    for (var key in data) {
+                        if (!isNaN(parseInt(key, 10))) {
+                            count++;
+                        }
+                    }
+
+                    document.getElementById("statCategories").innerText = count;
+                });
+
+            // Recent uploads (last 7 days)
+            var sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+            firestore.collection("cats")
+                .where("addedAt", ">=", firebase.firestore.Timestamp.fromDate(sevenDaysAgo))
+                .get()
+                .then(function (snapshot) {
+                    document.getElementById("statRecent").innerText = snapshot.size;
+                });
+        }
+
+        function loadRecentEntries() {
+            if (!currentUser) return;
+
+            firestore.collection("cats")
+                .orderBy("addedAt", "desc")
+                .limit(10)
+                .get()
+                .then(function (snapshot) {
+                    var html = "";
+
+                    if (snapshot.empty) {
+                        html = "<p class='text-center text-on-surface-variant py-8'>No entries yet</p>";
+                    } else {
+                        snapshot.forEach(function (doc) {
+                            var data = doc.data();
+                            var date = data.addedAt ? data.addedAt.toDate().toLocaleDateString() : "Unknown";
+                            var thumb = data.thumbnail || "";
+                            var title = data.title || "Untitled";
+
+                            html += "<div class='flex gap-3 pb-3 border-b border-outline-variant/20 last:border-b-0'>";
+                            if (thumb) {
+                                html += "<img src='" + thumb + "' alt='" + title + "' class='w-12 h-12 rounded-lg object-cover flex-shrink-0' />";
+                            } else {
+                                html += "<div class='w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-tertiary'><span class='material-symbols-outlined text-lg'>image</span></div>";
+                            }
+                            html += "<div class='flex-1 min-w-0'><p class='font-bold text-on-surface text-sm truncate'>" + title + "</p><p class='text-xs text-tertiary'>" + date + "</p></div></div>";
+                        });
+                    }
+
+                    document.getElementById("recentList").innerHTML = html;
+                });
+        }
+
+    </script>
+
+</body>
+
+</html>

@@ -11,14 +11,16 @@ var CLOUDINARY_CONFIG = {
 // then appending the API secret, and computing the SHA-1 hash.
 function generateSignature(params, apiSecret) {
     var keys = Object.keys(params).sort();
+    var signParts = [];
     var signString = '';
     var i;
 
-    // Build the string to sign: key1=value1&key2=value2&...&apiSecret
+    // Build the string to sign: key1=value1&key2=value2... + apiSecret
     for (i = 0; i < keys.length; i = i + 1) {
-        signString += keys[i] + '=' + params[keys[i]] + '&';
+        signParts.push(keys[i] + '=' + params[keys[i]]);
     }
-    signString += apiSecret;
+
+    signString = signParts.join('&') + apiSecret;
 
     return CryptoJS.SHA1(signString).toString();
 }
@@ -48,12 +50,14 @@ function isVideoFile(file) {
 // Uploads a single file to Cloudinary using signed authentication
 function uploadToCloudinary(file, callback) {
     var formData = new FormData();
+    var firebaseTimestamp = firebase.firestore.Timestamp.now();
+    var timestamp = String(firebaseTimestamp.seconds);
 
-    // Only the preset and api_key are included in the signature.
-    // These parameters tell Cloudinary which preset to use for this upload.
+    // Signed uploads require a timestamp.
+    // Use Firebase's built-in timestamp utility to keep time handling consistent.
     var paramsToSign = {
-        upload_preset: CLOUDINARY_CONFIG.uploadPreset,
-        api_key: CLOUDINARY_CONFIG.apiKey
+        timestamp: timestamp,
+        upload_preset: CLOUDINARY_CONFIG.uploadPreset
     };
     var signature = generateSignature(paramsToSign, CLOUDINARY_CONFIG.apiSecret);
 
@@ -61,6 +65,7 @@ function uploadToCloudinary(file, callback) {
     var resourceType = isVideoFile(file) ? "video" : "image";
 
     formData.append("file", file);
+    formData.append("timestamp", timestamp);
     formData.append("upload_preset", CLOUDINARY_CONFIG.uploadPreset);
     formData.append("api_key", CLOUDINARY_CONFIG.apiKey);
     formData.append("signature", signature);
