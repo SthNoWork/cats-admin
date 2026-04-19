@@ -62,7 +62,52 @@
     return /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url || "");
   }
 
-  function readFileAsDataUrl(file) {
+  function inferMimeTypeFromName(fileName) {
+    var name = String(fileName || "").toLowerCase();
+    if (/\.jpe?g$/i.test(name)) return "image/jpeg";
+    if (/\.png$/i.test(name)) return "image/png";
+    if (/\.webp$/i.test(name)) return "image/webp";
+    if (/\.gif$/i.test(name)) return "image/gif";
+    if (/\.avif$/i.test(name)) return "image/avif";
+    if (/\.heic$/i.test(name)) return "image/heic";
+    if (/\.heif$/i.test(name)) return "image/heif";
+    if (/\.mp4$/i.test(name)) return "video/mp4";
+    if (/\.webm$/i.test(name)) return "video/webm";
+    if (/\.mov$/i.test(name)) return "video/quicktime";
+    if (/\.m4v$/i.test(name)) return "video/x-m4v";
+    return "";
+  }
+
+  function isVideoFile(file) {
+    if (!file) return false;
+    if (file.type && file.type.indexOf("video/") === 0) return true;
+    var inferred = inferMimeTypeFromName(file.name);
+    return inferred.indexOf("video/") === 0;
+  }
+
+  function getPreviewBlob(item) {
+    if (!item || item.kind !== "file" || !item.file) {
+      return null;
+    }
+
+    var file = item.file;
+    if (file.type) {
+      return file;
+    }
+
+    var inferredMime = inferMimeTypeFromName(file.name);
+    if (!inferredMime) {
+      return file;
+    }
+
+    try {
+      return new Blob([file], { type: inferredMime });
+    } catch (_error) {
+      return file;
+    }
+  }
+
+  function readFileAsDataUrl(blobLike) {
     return new Promise(function (resolve, reject) {
       var reader = new FileReader();
       reader.onload = function () {
@@ -71,7 +116,7 @@
       reader.onerror = function () {
         reject(reader.error || new Error("Failed to read file"));
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(blobLike);
     });
   }
 
@@ -83,7 +128,10 @@
       }
       if (!item.previewUrl) {
         try {
-          item.previewUrl = URL.createObjectURL(item.file);
+          var previewBlob = getPreviewBlob(item);
+          item.previewUrl = previewBlob
+            ? URL.createObjectURL(previewBlob)
+            : null;
         } catch (_error) {
           item.previewUrl = null;
         }
@@ -157,15 +205,15 @@
         file: file,
         previewUrl: null,
         previewDataUrl: null,
-        mediaType:
-          file.type && file.type.indexOf("video/") === 0 ? "video" : "image",
+        mediaType: isVideoFile(file) ? "video" : "image",
       };
 
       state.mediaItems.push(item);
 
       // Data URL preview is more reliable on some mobile browsers than blob URLs.
       if (item.mediaType === "image") {
-        readFileAsDataUrl(file)
+        var previewBlob = getPreviewBlob(item) || file;
+        readFileAsDataUrl(previewBlob)
           .then(function (dataUrl) {
             if (!dataUrl) return;
             item.previewDataUrl = dataUrl;
@@ -251,7 +299,8 @@
             return;
           }
 
-          readFileAsDataUrl(item.file)
+          var fallbackBlob = getPreviewBlob(item) || item.file;
+          readFileAsDataUrl(fallbackBlob)
             .then(function (dataUrl) {
               if (!dataUrl) return;
               item.previewDataUrl = dataUrl;
